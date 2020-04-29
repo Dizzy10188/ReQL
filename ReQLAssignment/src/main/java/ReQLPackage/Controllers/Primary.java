@@ -25,7 +25,7 @@ public class Primary {
         System.out.println("EX: CREATE TABLE *TABLE_NAME* (COLUMN_NAME_1, COLUMN_NAME_2): line format ((regex 1),(regex 2)etc...)file \"path to file with extension\"");
         System.out.println("---------------------------\n");
         do {
-            line = "CREATE TABLE appointments (patient_name,doctor_name,apt_date,apt_time,topic): line format /(\\w*);(\\w*);([^ ]*) ([^ ]*);(.*$) /file\"C:\\Users\\Wesley Monk\\Documents\\TestNotes\\test.txt\"";
+            line = "CREATE TABLE appointments (patient_name,doctor_name,apt_date,apt_time,topic): line format /([\\w\\s]*);([\\W\\w\\s]*);([^ ]*) ([^ ]*);(.*$) /file\"C:\\Users\\Wesley Monk\\Documents\\TestNotes\\test.txt\"";
 
 //            line = "CrEatE TABLE Products\n" +
 //                    "(Price,Amount): \n" +
@@ -46,7 +46,7 @@ public class Primary {
         System.out.println("---------------------------\n");
         statementWorked = false;
         do {
-            line = "SELECT date, time, src_ip FROM mylog WHERE date >= '2019-01-01'";
+            line = "SELECT patient_name, topic, doctor_name FROM appointments WHERE apt_date = '3/1/2020'";
             if (validateCommand(line, selectRegex)) {
                 statementWorked = true;
             } else {
@@ -66,15 +66,51 @@ public class Primary {
         String operator = mt.group("operator");
         String value = mt.group("value");
 
-        for (String val: mt.group("colNames").split(",")) {
-            colNamesList.add(val);
+        for (String val : mt.group("colNames").split(",")) {
+            colNamesList.add(val.trim());
         }
 
+        String fileString = "";
+
+        try {
+            FileReader fr = new FileReader(table.getFilePath());
+            BufferedReader br = new BufferedReader(fr);
+
+//            System.out.println(table.getLineFormat());
+
+            while ((fileString = br.readLine()) != null) {
+//                System.out.println(fileString);
+                Pattern pat = Pattern.compile(table.getLineFormat());
+                Matcher mat = pat.matcher(fileString);
+                mat.find();
+                for (String val : colNamesList) {
+                    int x = table.getColNames().indexOf(val) + 1;
+                    String y = mt.group(x);
+                    System.out.println(y);
+                }
+
+
+                table.getLineFormat();
+            }
+
+            br.close();
+            fr.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+//        System.out.println("----------------------");
+//        System.out.println(table.getColNames());
+//        System.out.println("----------------------");
+//        System.out.println(colNamesList);
 //        System.out.println(tableName);
 //        System.out.println(colName);
 //        System.out.println(operator);
 //        System.out.println(value);
-//        System.out.println(colNamesList);
 
 
 //        try {
@@ -120,7 +156,7 @@ public class Primary {
 
         ArrayList<String> colNamesList = new ArrayList<String>();
 
-        for (String val: mt.group("colName").split(",")) {
+        for (String val : mt.group("colName").split(",")) {
             colNamesList.add(val);
         }
 
@@ -132,8 +168,7 @@ public class Primary {
         Matcher mt = pt.matcher(line);
         if (mt.matches() == true) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
