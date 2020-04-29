@@ -4,7 +4,10 @@ import ReQLPackage.Models.Table;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -78,19 +81,49 @@ public class Primary {
 
 //            System.out.println(table.getLineFormat());
 
+
             while ((fileString = br.readLine()) != null) {
-//                System.out.println(fileString);
+                String selects = "| ";
                 Pattern pat = Pattern.compile(table.getLineFormat());
                 Matcher mat = pat.matcher(fileString);
                 mat.find();
-                for (String val : colNamesList) {
-                    int x = table.getColNames().indexOf(val) + 1;
-                    String y = mat.group(x);
-                    System.out.println(y);
+
+
+//                colName
+//                operator
+//                value
+                if (table.getColNames().contains(colName)) {
+                    int colGroup = table.getColNames().indexOf(colName) + 1;
+                    switch (operator) {
+                        case "=":
+                            Date date = StringToDate(mat.group(colGroup));
+                            new SimpleDateFormat("MM-dd-yyyy").format(date);
+                            System.out.println(">= : " + date);
+                            break;
+                        case "<=":
+                            System.out.println("<=");
+                            break;
+                        case ">":
+                            System.out.println(">");
+                            break;
+                        case "<":
+                            System.out.println("<");
+                            break;
+                        case ">=":
+                            System.out.println("=");
+                            break;
+                        default:
+                            System.out.println("The operator given was invalid");
+                    }
+                } else {
+                    System.out.println("The column name specified in the WHERE clause is Invalid");
                 }
 
-
-//                table.getLineFormat();
+                for (String val : colNamesList) {
+                    int x = table.getColNames().indexOf(val) + 1;
+                    selects += mat.group(x) + " | ";
+                }
+                System.out.println(selects);
             }
 
             br.close();
@@ -99,6 +132,8 @@ public class Primary {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
             e.printStackTrace();
         }
 
@@ -172,4 +207,14 @@ public class Primary {
             return false;
         }
     }
+
+    public Date StringToDate(String dob) throws ParseException {
+        //Instantiating the SimpleDateFormat class
+        SimpleDateFormat formatter = new SimpleDateFormat("mm-dd-yyyy");
+        //Parsing the given String to Date object
+        Date date = formatter.parse(dob);
+        System.out.println("Date object value: "+date);
+        return date;
+    }
+
 }
