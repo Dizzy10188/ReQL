@@ -1,0 +1,1 @@
+{"tableName":"appointments","colNames":["patient_name","doctor_name","apt_date","apt_time","topic"],"lineFormat":"(\\w*);(\\w*);([^ ]*) ([^ ]*);(.*$) ","filePath":"C:\\Users\\Wesley Monk\\Documents\\TestNotes\\test.txt"}
