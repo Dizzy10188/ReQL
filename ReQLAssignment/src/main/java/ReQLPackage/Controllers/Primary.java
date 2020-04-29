@@ -53,15 +53,36 @@ public class Primary {
                 System.out.println("SELECT STATEMENT INVALID. TRY AGAIN");
             }
         } while (!statementWorked);
-        selectFromTable(line, table);
+        selectFromTableAndPrint(line, table);
     }
 
-    public void selectFromTable(String line, Table table) {
-        try {
-            FileInputStream in = new FileInputStream("textFiles\\test.txt");
-        } catch (Exception ex) {
-            ex.printStackTrace();
+    public void selectFromTableAndPrint(String line, Table table) {
+        Pattern pt = Pattern.compile(selectRegex);
+        Matcher mt = pt.matcher(line);
+        mt.find();
+        ArrayList<String> colNamesList = new ArrayList<String>();
+        String tableName = mt.group("tableName");
+        String colName = mt.group("colName");
+        String operator = mt.group("operator");
+        String value = mt.group("value");
+
+        for (String val: mt.group("colNames").split(",")) {
+            colNamesList.add(val);
         }
+
+//        System.out.println(tableName);
+//        System.out.println(colName);
+//        System.out.println(operator);
+//        System.out.println(value);
+//        System.out.println(colNamesList);
+
+
+//        try {
+//            FileInputStream in = new FileInputStream(table.getFilePath());
+//
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
     }
 
     public void saveTable(Table table) {
@@ -77,7 +98,7 @@ public class Primary {
             ObjectMapper mapper = new ObjectMapper();
             //Converting the Object to JSONString
             String jsonString = mapper.writeValueAsString(table);
-            System.out.println(jsonString);
+//            System.out.println(jsonString);
 
             // write something in the file
             writer.write(jsonString);
