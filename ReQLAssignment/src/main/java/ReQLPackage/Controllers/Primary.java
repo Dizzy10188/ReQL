@@ -50,6 +50,7 @@ public class Primary {
         statementWorked = false;
         do {
             line = "SELECT patient_name, topic, doctor_name FROM appointments WHERE apt_date = '3/1/2020'";
+            System.out.println(line);
             if (validateCommand(line, selectRegex)) {
                 statementWorked = true;
             } else {
@@ -88,29 +89,31 @@ public class Primary {
                 Matcher mat = pat.matcher(fileString);
                 mat.find();
 
-
 //                colName
 //                operator
 //                value
                 if (table.getColNames().contains(colName)) {
                     int colGroup = table.getColNames().indexOf(colName) + 1;
                     switch (operator) {
-                        case "=":
+                        case ">=":
                             Date date = StringToDate(mat.group(colGroup));
-                            new SimpleDateFormat("MM-dd-yyyy").format(date);
                             System.out.println(">= : " + date);
                             break;
                         case "<=":
-                            System.out.println("<=");
+                            date = StringToDate(mat.group(colGroup));
+                            System.out.println("<= : " + date);
                             break;
                         case ">":
-                            System.out.println(">");
+                            date = StringToDate(mat.group(colGroup));
+                            System.out.println("> : " + date);
                             break;
                         case "<":
-                            System.out.println("<");
+                            date = StringToDate(mat.group(colGroup));
+                            System.out.println("< : " + date);
                             break;
-                        case ">=":
-                            System.out.println("=");
+                        case "=":
+                            date = StringToDate(mat.group(colGroup));
+                            System.out.println("= : " + date);
                             break;
                         default:
                             System.out.println("The operator given was invalid");
@@ -124,6 +127,7 @@ public class Primary {
                     selects += mat.group(x) + " | ";
                 }
                 System.out.println(selects);
+                System.out.println("\n");
             }
 
             br.close();
@@ -213,9 +217,8 @@ public class Primary {
         Pattern pt = Pattern.compile(dateRegex);
         Matcher mt = pt.matcher(dob);
         if (mt.matches() == true) {
-//            System.out.println("It matches");
             //Instantiating the SimpleDateFormat class
-            SimpleDateFormat formatter = new SimpleDateFormat("mm-dd-yyyy");
+            SimpleDateFormat formatter = new SimpleDateFormat("mm/dd/yyyy");
             //Parsing the given String to Date object
             Date date = formatter.parse(dob);
             System.out.println("Date object value: "+date);
