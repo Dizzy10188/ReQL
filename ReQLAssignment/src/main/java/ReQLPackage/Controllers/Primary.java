@@ -23,17 +23,17 @@ public class Primary {
     public void run() {
         boolean statementWorked = false;
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String line;
+        String line = "";
         System.out.println("Please define the table structure \n*names can only be a single line, no spaces* *All text must be on a single line*");
         System.out.println("EX: CREATE TABLE *TABLE_NAME* (COLUMN_NAME_1, COLUMN_NAME_2): line format ((regex 1),(regex 2)etc...)file \"path to file with extension\"");
         System.out.println("---------------------------\n");
         do {
-            line = "CREATE TABLE appointments (patient_name,doctor_name,apt_date,apt_time,topic): line format /([\\w\\s]*);([\\W\\w\\s]*);([^ ]*);([^ ]*);(.*$)/file\"C:\\Users\\Wesley Monk\\Documents\\TestNotes\\test.txt\"";
-
-//            line = "CrEatE TABLE Products\n" +
-//                    "(Price,Amount): \n" +
-//                    "line format /(\\w*)(\\w*)/\n" +
-//                    "file\"C:\\Users\\Wesley Monk\\Documents\\TestNotes\\test.txt\"";
+//            line = "CREATE TABLE appointments (patient_name,doctor_name,apt_date,apt_time,topic): line format /([\\w\\s]*);([\\W\\w\\s]*);([^ ]*);([^ ]*);(.*$)/file\"C:\\Users\\Wesley Monk\\Documents\\TestNotes\\test.txt\"";
+            try {
+                line = br.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             if (validateCommand(line, createRegex)) {
                 statementWorked = true;
             } else {
@@ -49,8 +49,13 @@ public class Primary {
         System.out.println("---------------------------\n");
         statementWorked = false;
         do {
-            line = "SELECT patient_name, topic, doctor_name FROM appointments WHERE apt_date = '3/1/2020'";
-            System.out.println(line);
+//            line = "SELECT patient_name, topic, doctor_name FROM appointments WHERE apt_date <= 3/1/2020";
+            try {
+                line = br.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+//            System.out.println(line);
             if (validateCommand(line, selectRegex)) {
                 statementWorked = true;
             } else {
@@ -74,46 +79,364 @@ public class Primary {
             colNamesList.add(val.trim());
         }
 
+        String format = "|";
+        String formattedString = "";
+
+        for (int i = 0; i < colNamesList.size(); i++) {
+            format += " %-20s |";
+        }
+
+        if (colNamesList.size() == 1) {
+            formattedString = String.format(format, colNamesList.get(0));
+        } else if (colNamesList.size() == 2) {
+            formattedString = String.format(format, colNamesList.get(0), colNamesList.get(1));
+        } else if (colNamesList.size() == 3) {
+            formattedString = String.format(format, colNamesList.get(0), colNamesList.get(1), colNamesList.get(2));
+        } else if (colNamesList.size() == 4) {
+            formattedString = String.format(format, colNamesList.get(0), colNamesList.get(1), colNamesList.get(2), colNamesList.get(3));
+        } else if (colNamesList.size() == 5) {
+            formattedString = String.format(format, colNamesList.get(0), colNamesList.get(1), colNamesList.get(2), colNamesList.get(3), colNamesList.get(4));
+        } else {
+            System.out.println("I didn't account for this");
+        }
+
+        System.out.println(formattedString);
+        System.out.println("--------------------------------------------------------------------------------------------------------------------");
+
         String fileString = "";
 
         try {
             FileReader fr = new FileReader(table.getFilePath());
             BufferedReader br = new BufferedReader(fr);
 
-//            System.out.println(table.getLineFormat());
-
-
             while ((fileString = br.readLine()) != null) {
-                String selects = "| ";
                 Pattern pat = Pattern.compile(table.getLineFormat());
                 Matcher mat = pat.matcher(fileString);
                 mat.find();
 
-//                colName
-//                operator
-//                value
                 if (table.getColNames().contains(colName)) {
                     int colGroup = table.getColNames().indexOf(colName) + 1;
+                    Date date = stringToDate(mat.group(colGroup));
+                    Date selectDate = stringToDate(value);
+                    String stringFormat = "";
+                    String formatAmount = "|";
+                    ArrayList<String> colResults = new ArrayList<String>();
+
                     switch (operator) {
                         case ">=":
-                            Date date = StringToDate(mat.group(colGroup));
-                            System.out.println(">= : " + date);
+                            if (date.after(selectDate) || date.equals(selectDate)) {
+                                for (int i = 0; i < colNamesList.size(); i++) {
+                                    formatAmount += " %-20s |";
+                                }
+
+                                if (colNamesList.size() == 1)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0));
+                                }
+                                else if (colNamesList.size() == 2)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1));
+                                }
+                                else if (colNamesList.size() == 3)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2));
+                                }
+                                else if (colNamesList.size() == 4)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(3)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2), colResults.get(3));
+                                }
+                                else if (colNamesList.size() == 5)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(3)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(4)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2), colResults.get(3), colResults.get(4));
+                                }
+                                else
+                                {
+                                    System.out.println("I didn't account for this");
+                                }
+                                System.out.println(stringFormat);
+                            }
                             break;
                         case "<=":
-                            date = StringToDate(mat.group(colGroup));
-                            System.out.println("<= : " + date);
+                            if (date.before(selectDate) || date.equals(selectDate)) {
+                                for (int i = 0; i < colNamesList.size(); i++) {
+                                    formatAmount += " %-20s |";
+                                }
+
+                                if (colNamesList.size() == 1)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0));
+                                }
+                                else if (colNamesList.size() == 2)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1));
+                                }
+                                else if (colNamesList.size() == 3)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2));
+                                }
+                                else if (colNamesList.size() == 4)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(3)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2), colResults.get(3));
+                                }
+                                else if (colNamesList.size() == 5)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(3)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(4)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2), colResults.get(3), colResults.get(4));
+                                }
+                                else
+                                {
+                                    System.out.println("I didn't account for this");
+                                }
+                                System.out.println(stringFormat);
+                            }
                             break;
                         case ">":
-                            date = StringToDate(mat.group(colGroup));
-                            System.out.println("> : " + date);
+                            if (date.after(selectDate)) {
+                                for (int i = 0; i < colNamesList.size(); i++) {
+                                    formatAmount += " %-20s |";
+                                }
+
+                                if (colNamesList.size() == 1)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0));
+                                }
+                                else if (colNamesList.size() == 2)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1));
+                                }
+                                else if (colNamesList.size() == 3)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2));
+                                }
+                                else if (colNamesList.size() == 4)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(3)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2), colResults.get(3));
+                                }
+                                else if (colNamesList.size() == 5)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(3)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(4)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2), colResults.get(3), colResults.get(4));
+                                }
+                                else
+                                {
+                                    System.out.println("I didn't account for this");
+                                }
+                                System.out.println(stringFormat);
+                            }
                             break;
                         case "<":
-                            date = StringToDate(mat.group(colGroup));
-                            System.out.println("< : " + date);
+                            if (date.before(selectDate)) {
+                                for (int i = 0; i < colNamesList.size(); i++) {
+                                    formatAmount += " %-20s |";
+                                }
+
+                                if (colNamesList.size() == 1)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0));
+                                }
+                                else if (colNamesList.size() == 2)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1));
+                                }
+                                else if (colNamesList.size() == 3)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2));
+                                }
+                                else if (colNamesList.size() == 4)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(3)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2), colResults.get(3));
+                                }
+                                else if (colNamesList.size() == 5)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(3)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(4)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2), colResults.get(3), colResults.get(4));
+                                }
+                                else
+                                {
+                                    System.out.println("I didn't account for this");
+                                }
+                                System.out.println(stringFormat);
+                            }
                             break;
                         case "=":
-                            date = StringToDate(mat.group(colGroup));
-                            System.out.println("= : " + date);
+                            if (date.equals(selectDate)) {
+                                for (int i = 0; i < colNamesList.size(); i++) {
+                                    formatAmount += " %-20s |";
+                                }
+
+                                if (colNamesList.size() == 1)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0));
+                                }
+                                else if (colNamesList.size() == 2)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1));
+                                }
+                                else if (colNamesList.size() == 3)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2));
+                                }
+                                else if (colNamesList.size() == 4)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(3)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2), colResults.get(3));
+                                }
+                                else if (colNamesList.size() == 5)
+                                {
+                                    int x = table.getColNames().indexOf(colNamesList.get(0)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(1)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(2)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(3)) + 1;
+                                    colResults.add(mat.group(x));
+                                    x = table.getColNames().indexOf(colNamesList.get(4)) + 1;
+                                    colResults.add(mat.group(x));
+                                    stringFormat = String.format(formatAmount, colResults.get(0), colResults.get(1), colResults.get(2), colResults.get(3), colResults.get(4));
+                                }
+                                else
+                                {
+                                    System.out.println("I didn't account for this");
+                                }
+                                System.out.println(stringFormat);
+                            }
                             break;
                         default:
                             System.out.println("The operator given was invalid");
@@ -121,13 +444,6 @@ public class Primary {
                 } else {
                     System.out.println("The column name specified in the WHERE clause is Invalid");
                 }
-
-                for (String val : colNamesList) {
-                    int x = table.getColNames().indexOf(val) + 1;
-                    selects += mat.group(x) + " | ";
-                }
-                System.out.println(selects);
-                System.out.println("\n");
             }
 
             br.close();
@@ -137,27 +453,7 @@ public class Primary {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
         }
-
-
-//        System.out.println("----------------------");
-//        System.out.println(table.getColNames());
-//        System.out.println("----------------------");
-//        System.out.println(colNamesList);
-//        System.out.println(tableName);
-//        System.out.println(colName);
-//        System.out.println(operator);
-//        System.out.println(value);
-
-
-//        try {
-//            FileInputStream in = new FileInputStream(table.getFilePath());
-//
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
     }
 
     public void saveTable(Table table) {
@@ -186,20 +482,25 @@ public class Primary {
     }
 
     public Table createTable(String line) {
+        line = line.trim();
         Pattern pt = Pattern.compile(createRegex);
         Matcher mt = pt.matcher(line);
         mt.find();
-        String tableName = mt.group("tableName");
-        String colRegex = mt.group("colRegex");
-        String filePath = mt.group("filePath");
+        if (!line.isEmpty()) {
+            String tableName = mt.group("tableName");
+            String colRegex = mt.group("colRegex");
+            String filePath = mt.group("filePath");
 
-        ArrayList<String> colNamesList = new ArrayList<String>();
+            ArrayList<String> colNamesList = new ArrayList<String>();
 
-        for (String val : mt.group("colName").split(",")) {
-            colNamesList.add(val);
+            for (String val : mt.group("colName").split(",")) {
+                colNamesList.add(val);
+            }
+
+            return new Table(tableName, colNamesList, colRegex, filePath);
+        } else {
+            throw new IllegalArgumentException("Line is blank. Please fix it");
         }
-
-        return new Table(tableName, colNamesList, colRegex, filePath);
     }
 
     public boolean validateCommand(String line, String regex) {
@@ -212,27 +513,23 @@ public class Primary {
         }
     }
 
-    public Date StringToDate(String dob) throws ParseException {
+    public Date stringToDate(String dob) {
         String dateRegex = "(((0?[1-9]|1[012])/(0?[1-9]|1\\d|2[0-8])|(0?[13456789]|1[012])/(29|30)|(0?[13578]|1[02])/31)/(19|[2-9]\\d)\\d{2}|0?2/29/((19|[2-9]\\d)(0[48]|[2468][048]|[13579][26])|(([2468][048]|[3579][26])00)))";
         Pattern pt = Pattern.compile(dateRegex);
         Matcher mt = pt.matcher(dob);
         if (mt.matches() == true) {
-            //Instantiating the SimpleDateFormat class
-            SimpleDateFormat formatter = new SimpleDateFormat("mm/dd/yyyy");
-            //Parsing the given String to Date object
-            Date date = formatter.parse(dob);
-            System.out.println("Date object value: "+date);
+            SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+            Date date = null;
+            try {
+                date = formatter.parse(dob);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             return date;
         } else {
             System.out.println("The date given is invalid");
             return null;
         }
-        //Instantiating the SimpleDateFormat class
-//        SimpleDateFormat formatter = new SimpleDateFormat("mm-dd-yyyy");
-//        //Parsing the given String to Date object
-//        Date date = formatter.parse(dob);
-//        System.out.println("Date object value: "+date);
-//        return date;
     }
 
 }
